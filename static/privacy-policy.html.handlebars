@@ -1,0 +1,35 @@
+﻿<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{{LongAppName}} Privacy Policy</title>
+
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+    </head>
+    <body>
+        <div class="jumbotron">
+            <h1>{{LongAppName}} Privacy Policy</h1>
+
+            This document describes what information the {{LongAppName}} collects, how it is used, how and where it is stored, whom it is shared with, and how you can remove the stored information.
+
+            <h2> How we use your data </h2>
+            The {{LongAppName}} attempts to collect and store as little information as possible. When you connect to any of the supported OAuth providers, {{AppName}} obtains a long-term session key. This key, combined with a secret known only to the {{LongAppName}}, can be exchanged for a short-term key, which can be used to access your account on the site that you have authenticated with.
+
+            <h2> How we store your data </h2>
+            The service itself does not store any data, it simply collects the long-term session key and returns it. To obtain a working session token, the client sends the long-term token to the OAuth service, which will use it along with a key only known to the OAuth service to obtain a valid session token. This session token can be used to log in to the service. The OAuth service sees the session token and can request new session tokens, given the long-term token. However, since this token is not stored, there is no information to leak in the service. This means that the OAuth service does not store, any personally identifiable information. This includes not storing username, email or password to the authenticating site.
+
+            <h2> Where we store and handle your data </h2>
+            No data is stored long-term. For monitoring and diagnostics purposes we are storing log information that shows IP addresses and some request information. This data is stored for a short period, as the amount of data is quite large, and new data overwrites existing data.
+
+            <h2> Who we share your data with </h2>
+            As part of the login process, we send the long-term session token to the provider who issued it. The resulting short-term session key is sent directly to the requesting client, and not stored on the server.
+
+            Apart from this exchange of secrets, we do not share your information with anyone. This is enforced since we do not store any information that we could share, except from the log data as described above. Please note that the hosting provider may also have access to the log data.
+
+            <h2> How to remove the stored information </h2>
+            Since we are not storing anything, there is nothing to remove. To revoke permissionsm you can use the site you are authenticating with, and revoke access for {{AppName}}. This will permanently invalidate all long-term session tokens for the {{LongAppName}}.
+        </div>
+    </body>
+</html>

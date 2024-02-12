@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{LongAppName}}</title>
+
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="//oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="//oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style type="text/css">
+      .btn-lg { margin: 10px; min-width: 300px; }
+      .btn-lg > .btn-text { display: inline-block; padding: 10px; }
+      ul { list-style-type: none; padding-left: 0px; }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript">
+      $(document).ready(function() {
+
+        var data = [
+        {{#each Providers}}
+          {
+            'display': '{{this.display}}',
+            'id': '{{this.id}}'
+          },
+        {{/each}}
+
+          null /*dummy*/
+        ];
+
+        for (var n in data)
+        {
+          if (n == null || data[n] == null)
+            continue;
+
+          var d = data[n];
+          if (d.Id == '{{RedirectId}}') {
+            $('#normal-login').hide();
+            $('#fast-login').show();
+            $('#fast-login-text').text('Redirecting to ' + d.display + ' for login ...');
+            window.location.href = $('#start-btn-' + d.Id).attr('href');
+          }
+        }
+
+      });
+    </script>
+
+    <div class="well well-lg">
+    <div class="jumbotron">
+      <h1>{{LongAppName}}</h1>
+      <div id="normal-login">
+
+        {{#if MoreThanOne}}
+        <p>This service is intended for {{AppName}} users that want to use one of the following OAuth enabled providers:</p>
+        <ul>
+          {{#each Providers}}
+          <li><a href="{{this.ServiceLink}}" target="_blank">{{this.Display}}</a></li>
+          {{/each }}
+        </ul>
+        <p> Click the button for the provider you wish to log in with:</p>
+        {{/if}}
+
+        {{#each Providers}}
+            <a id="start-btn-{{this.Id}}" class="btn btn-primary btn-lg" role="button" href="{{this.AuthLink}}">
+            {{#if this.BrandImage}}
+              <img class="provider-image" src="{{this.BrandImage}}" />
+            {{/if}}
+            <div class="btn-text">{{this.Display}} login</div>
+            </a>
+        {{/each}}
+
+
+        {{#each Providers}}
+          {{{this.Notes}}}
+        {{/each}}
+
+        <p style="font-size: small"><a href="/revoke">Click here if you need to revoke a previously established authid</a></p>
+        <p style="font-size: small">By using this service, you accept the <a href="/privacy-policy">privacy policy</a></p>
+      </div>
+      <div id="fast-login" style="display: none">
+        <p id="fast-login-text"></p>
+      </div>
+    </div>
+    </div>
+  </body>
+</html>

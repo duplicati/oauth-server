@@ -1,0 +1,66 @@
+[{
+    "id": "googledrive",
+    "serviceId": "GD",
+    "name": "Google Drive (limited)",
+    "clientId": "%GD_CLIENT_ID%",
+    "clientSecret": "%GD_CLIENT_SECRET%"
+},{
+    "id": "googledocs",
+    "serviceId": "GD",
+    "name": "Google Drive (full access)",
+    "clientId": "%GD_CLIENT_ID%",
+    "clientSecret": "%GD_CLIENT_SECRET%",
+    "scope": "https://www.googleapis.com/auth/drive"
+},{
+    "id": "gcs",
+    "serviceId": "GCS",
+    "name": "Google Cloud Storage",
+    "clientId": "%GCS_CLIENT_ID%",
+    "clientSecret": "%GCS_CLIENT_SECRET%"
+},{
+    "id": "onedrive",
+    "serviceId": "WL",
+    "name": "Microsoft OneDrive (Live Connect API)",
+    "clientId": "%WL_CLIENT_ID%",
+    "clientSecret": "%WL_CLIENT_SECRET%"
+},{
+    "id": "onedrivev2",
+    "serviceId": "MSGRAPH",
+    "name": "Microsoft OneDrive (Microsoft Graph API)",
+    "clientId": "%MSGRAPH_CLIENT_ID%",
+    "clientSecret": "%MSGRAPH_CLIENT_SECRET%"
+},{
+    "id": "sharepoint",
+    "serviceId": "MSGRAPH",
+    "name": "Microsoft SharePoint (Microsoft Graph API)",
+    "clientId": "%MSGRAPH_CLIENT_ID%",
+    "clientSecret": "%MSGRAPH_CLIENT_SECRET%",
+    "scope": "offline_access Files.ReadWrite.All",
+    "serviceLink": "https://products.office.com/en-us/sharepoint"
+},{
+    "id": "msgroup",
+    "serviceId": "MSGRAPH",
+    "name": "Microsoft Office 365 Groups (Microsoft Graph API)",
+    "clientId": "%MSGRAPH_CLIENT_ID%",
+    "clientSecret": "%MSGRAPH_CLIENT_SECRET%",
+    "scope": "offline_access Files.ReadWrite.All Group.Read.All",
+    "serviceLink": "https://support.office.com/en-us/article/Learn-about-Office-365-groups-b565caa1-5c40-40ef-9915-60fdb2d97fa2"
+},{
+    "id": "box.com",
+    "serviceId": "BOX",
+    "name": "Box.com",
+    "clientId": "%BOX_CLIENT_ID%",
+    "clientSecret": "%BOX_CLIENT_SECRET%"
+},{
+    "id": "dropbox",
+    "serviceId": "DROPBOX",
+    "name": "Dropbox",
+    "clientId": "%DROPBOX_CLIENT_ID%",
+    "clientSecret": "%DROPBOX_CLIENT_SECRET%"
+},{
+    "id": "jottacloud", 
+    "serviceId": "JOTTA",
+    "name": "Jottacloud",
+    "clientId": "jottacli",
+    "clientSecret": "%JOTTA_CLIENT_SECRET%"
+}]
