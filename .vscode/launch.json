@@ -23,7 +23,7 @@
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "APPNAME": "Duplicati",
                 "HOSTNAME": "localhost:7042",
-                "SECRETS": "%HOME%/.config/secrets-for-oauth.json",
+                //"SECRETS": "%HOME%/.config/secrets-for-oauth.json",
                 //"SERVICES": "dropbox",
                 "STORAGE": "${workspaceFolder}/storage"
             },

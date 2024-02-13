@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using KVPSButter;
 
 namespace OAuthServer;
 
@@ -25,10 +26,10 @@ public class StorageProvider
     }
 
     /// <summary>
-    /// The connection string for the storage destination
+    /// The storage interface to use
     /// </summary>
-    private readonly string m_storageString;
-
+    private readonly IKVPS m_storage;
+    
     /// <summary>
     /// The minimum expiration for an access token (when nothing is reported from service)
     /// </summary>
@@ -49,9 +50,12 @@ public class StorageProvider
     /// <param name="storageString">The storage destination</param>
     public StorageProvider(string storageString)
     {
-        if (!Directory.Exists(storageString))
-            Directory.CreateDirectory(storageString);
-        m_storageString = storageString;
+        // If we just get a plain path, map it to the file provider.
+        // Since the filenames are guaranteed to be alphanumeric we can store them without encoding
+        if (storageString.IndexOf("://") < 0)
+            storageString = $"file://{storageString}?pathmapped=true";
+
+        m_storage = KVPSLoader.Default.Create(storageString);
     }
 
     /// <summary>
@@ -190,15 +194,8 @@ public class StorageProvider
     /// <param name="data">The data to write</param>
     /// <param name="cancellationToken">The cancellation token</param>
     /// <returns>An awaitable task</returns>
-    private async Task WriteEntryAsync(string key, Stream data, CancellationToken cancellationToken)
-    {
-        var path = Path.Combine(m_storageString, key);
-        using (var fs = File.OpenWrite(path))
-        {
-            fs.SetLength(0);
-            await data.CopyToAsync(fs, cancellationToken);
-        }
-    }
+    private  Task WriteEntryAsync(string key, Stream data, CancellationToken cancellationToken)
+        => m_storage.WriteAsync(key, data, cancellationToken);
 
     /// <summary>
     /// Reads an encrypted entry from persistent storage
@@ -206,11 +203,8 @@ public class StorageProvider
     /// <param name="key">The key to read</param>
     /// <param name="cancellationToken">The cancellation token</param>
     /// <returns>An awaitable task</returns>
-    private Task<Stream> ReadEntryAsync(string key, CancellationToken cancellationToken)
-    {
-        var path = Path.Combine(m_storageString, key);
-        return Task.FromResult<Stream>(File.OpenRead(path));
-    }
+    private async Task<Stream> ReadEntryAsync(string key, CancellationToken cancellationToken)
+        => await m_storage.ReadAsync(key, cancellationToken) ?? throw new KeyNotFoundException();
 
     /// <summary>
     /// Deletes an entry from persistent storage
@@ -219,9 +213,5 @@ public class StorageProvider
     /// <param name="cancellationToken">The cancellation token</param>
     /// <returns>An awaitable task</returns>
     private Task DeleteEntryAsync(string key, CancellationToken cancellationToken)
-    {
-        var path = Path.Combine(m_storageString, key);
-        File.Delete(path);
-        return Task.CompletedTask;
-    }
+        => m_storage.DeleteAsync(key, cancellationToken);
 }
