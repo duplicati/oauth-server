@@ -233,7 +233,7 @@ public static class ConfigurationLoader
 
             ExpandEnvPath(Environment.GetEnvironmentVariable(SecretsFileEnvKey)) ?? string.Empty,
             ExpandEnvPath(Environment.GetEnvironmentVariable(ConfigFileEnvKey)) ?? string.Empty,
-            ExpandEnvPath(Environment.GetEnvironmentVariable(StorageStringEnvKey)) ?? string.Empty
+            Environment.GetEnvironmentVariable(StorageStringEnvKey) ?? string.Empty
         );
 
         if (string.IsNullOrWhiteSpace(settings.Hostname))
