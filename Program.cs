@@ -1,3 +1,4 @@
+using Microsoft.Extensions.FileProviders;
 using OAuthServer;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +32,14 @@ var appContext = new ApplicationContext(
     storage
 );
 
+// Support LetsEncrypt
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @".well-known")),
+    RequestPath = new PathString("/.well-known"),
+    ServeUnknownFileTypes = true // serve extensionless file
+});
+
 /*
     // TODO: Implement this if it is still being used
     ('/token-state', TokenStateHandler),
@@ -47,5 +56,5 @@ app.MapPost("/refresh", ctx => OAuthServer.Handler.Refresh.Handle(ctx, appContex
 app.MapGet("/revoke", ctx => OAuthServer.Handler.StartRevoke.Handle(ctx, appContext));
 app.MapPost("/revoked", ctx => OAuthServer.Handler.CompleteRevoke.Handle(ctx, appContext));
 app.MapGet("/", ctx => OAuthServer.Handler.Index.Handle(ctx, appContext));
-
+        
 app.Run();
