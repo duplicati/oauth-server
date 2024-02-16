@@ -60,5 +60,11 @@ app.MapPost("/refresh", ctx => OAuthServer.Handler.Refresh.Handle(ctx, appContex
 app.MapGet("/revoke", ctx => OAuthServer.Handler.StartRevoke.Handle(ctx, appContext));
 app.MapPost("/revoked", ctx => OAuthServer.Handler.CompleteRevoke.Handle(ctx, appContext));
 app.MapGet("/", ctx => OAuthServer.Handler.Index.Handle(ctx, appContext));
-        
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot")),
+    RequestPath = new PathString("")
+});
+
 app.Run();
