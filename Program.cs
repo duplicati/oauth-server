@@ -33,12 +33,16 @@ var appContext = new ApplicationContext(
 );
 
 // Support LetsEncrypt
-app.UseStaticFiles(new StaticFileOptions
+var le_path = Path.Combine(Directory.GetCurrentDirectory(), @".well-known");
+if (Directory.Exists(le_path))
 {
-    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @".well-known")),
-    RequestPath = new PathString("/.well-known"),
-    ServeUnknownFileTypes = true // serve extensionless file
-});
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(le_path),
+        RequestPath = new PathString("/.well-known"),
+        ServeUnknownFileTypes = true // serve extensionless file
+    });
+}
 
 /*
     // TODO: Implement this if it is still being used
