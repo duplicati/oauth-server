@@ -19,8 +19,15 @@ Optional environment variables:
 - `DISPLAYNAME`: the value displayed to end users on html rendered pages
 - `SERVICES`: a comma separated list of services to enable; if this value is empty, all services are enabled. Enabling a serviceId (e.g., `gd` enables all services that use this). Example: `gd,gcs,dropbox`
 - `SECRETS`: path to an existing JSON file with key/value pairs that are injected as secrets
+- `SECRETS_PASSPHRASE`: path to an existing JSON file with key/value pairs that are injected as secrets. Use [AESCrypt](https://www.aescrypt.com) to encrypt the file
 - `CONFIGFILE`: path to an existing JSON file with a custom config. If this option is set, services with the same id will override the embedded `config.json` services with the same id.
 - `STORAGE`: a connection string for indicating where the V1 tokens are stored. If not set, all connections will use V2.
+
+## ASP.Net variables
+
+Since the application is based on ASP.Net, the variables for ASP.Net are also relevant. Most importantly:
+
+- `ASPNETCORE_HTTP_PORTS`: the port(s) the application is listening on
 
 ## Secrets
 

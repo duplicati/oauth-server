@@ -111,6 +111,7 @@ public sealed record TemplateRenderers(
 /// <param name="DisplayName">The display name to show</param>
 /// <param name="EnabledServiceIds">List of enabled service Ids</param>
 /// <param name="SecretsFilePath">Path to the OAuth secrets</param>
+/// <param name="SecretsPassphrase">Passhrase for decypting the OAuth secrets</param>
 /// <param name="ConfigFilePath">Path to service config overrides</param>
 /// <param name="StorageString">Path to a storage destination for v1 tokens</param>
 public sealed record ApplicationConfiguration(
@@ -119,6 +120,7 @@ public sealed record ApplicationConfiguration(
     string DisplayName,
     string EnabledServiceIds,
     string SecretsFilePath,
+    string SecretsPassphrase,
     string ConfigFilePath,
     string StorageString
 );

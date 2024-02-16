@@ -41,6 +41,11 @@ public static class ConfigurationLoader
     private const string SecretsFileEnvKey = "SECRETS";
 
     /// <summary>
+    /// The environment key for the passphrase to decrypt the secrets file
+    /// </summary>
+    private const string SecretsPassphraseKey = "SECRETS_PASSPHRASE";
+
+    /// <summary>
     /// The environment key for the config file
     /// </summary>
     private const string ConfigFileEnvKey = "CONFIGFILE";
@@ -232,6 +237,7 @@ public static class ConfigurationLoader
             Environment.GetEnvironmentVariable(ServicesEnvKey) ?? string.Empty,
 
             ExpandEnvPath(Environment.GetEnvironmentVariable(SecretsFileEnvKey)) ?? string.Empty,
+            Environment.GetEnvironmentVariable(SecretsPassphraseKey) ?? string.Empty,
             ExpandEnvPath(Environment.GetEnvironmentVariable(ConfigFileEnvKey)) ?? string.Empty,
             Environment.GetEnvironmentVariable(StorageStringEnvKey) ?? string.Empty
         );
@@ -298,7 +304,18 @@ public static class ConfigurationLoader
             if (!File.Exists(configuration.SecretsFilePath))
                 throw new InvalidDataException($"Secrets file specified, but not found: {Path.GetFullPath(configuration.SecretsFilePath)}");
 
-            var secrets = DeserializeFile<Dictionary<string, string>>(configuration.SecretsFilePath);
+            using var secretsFile = File.OpenRead(configuration.SecretsFilePath);
+            using var ms = new MemoryStream();
+
+            Stream secretsStream = secretsFile;
+            if (!string.IsNullOrWhiteSpace(configuration.SecretsPassphrase))
+            {
+                SharpAESCrypt.SharpAESCrypt.Decrypt(configuration.SecretsPassphrase, secretsFile, ms);
+                ms.Position = 0;
+                secretsStream = ms;                
+            }
+
+            var secrets = DeserializeStream<Dictionary<string, string>>(secretsStream, "secrets file");
             foreach (var kp in secrets)
                 translationvalues[$"%{kp.Key}%"] = kp.Value;
         }
