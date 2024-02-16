@@ -1,0 +1,1 @@
+docker build -t duplicati/oauth-server . --push
