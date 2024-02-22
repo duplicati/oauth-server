@@ -9,6 +9,7 @@ public static class DefaultConfigurations
     /// <summary>
     /// The setup for Windows Live endpoint
     /// </summary>
+    /// <remarks>Managed from: https://portal.azure.com</remarks>
     private static readonly ServiceDefault WindowsLive = new ServiceDefault(
         "WL",
         Name: "Microsoft OneDrive (Live Connect API)",
@@ -22,6 +23,7 @@ public static class DefaultConfigurations
     /// <summary>
     /// The setup for MS Graph API
     /// </summary>
+    /// <remarks>Managed from: https://portal.azure.com</remarks>
     private static readonly ServiceDefault MicrosoftGraph = new ServiceDefault(
         "MSGRAPH",
         Name: "Microsoft OneDrive (Microsoft Graph API)",
@@ -34,6 +36,7 @@ public static class DefaultConfigurations
     /// <summary>
     /// The setup for Google Drive API
     /// </summary>
+    /// <remarks>Managed from: https://console.developers.google.com</remarks>
     private static readonly ServiceDefault GoogleDrive = new ServiceDefault(
         "GD",
         Name: "Google Drive (limited)",
@@ -49,6 +52,7 @@ public static class DefaultConfigurations
     /// <summary>
     /// The setup for Google Cloud Services API
     /// </summary>
+    /// <remarks>Managed from: https://console.developers.google.com</remarks>
     private static readonly ServiceDefault GoogleCloudStorage = new ServiceDefault(
         "GCS",
         Name: "Google Cloud Storage",
@@ -64,6 +68,7 @@ public static class DefaultConfigurations
     /// <summary>
     /// The setup for box.com API
     /// </summary>
+    /// <remarks>Managed from: https://app.box.com/developers/console</remarks>
     private static readonly ServiceDefault BoxCom = new ServiceDefault(
         "BOX",
         Name: "Box.com",
@@ -76,6 +81,7 @@ public static class DefaultConfigurations
     /// <summary>
     /// The setup for the Dropbox API
     /// </summary>
+    /// <remarks>Managed from: https://www.dropbox.com/developers/apps</remarks>
     private static readonly ServiceDefault Dropbox = new ServiceDefault(
         "DROPBOX",
         Name: "Dropbox",
@@ -91,6 +97,7 @@ public static class DefaultConfigurations
     /// <summary>
     /// The setup for Jottacloud API
     /// </summary>
+    /// <remarks>https://www.jottacloud.com/web/account</remarks>
     private static readonly ServiceDefault Jottacloud = new ServiceDefault(
         "JOTTA",
         Name: "Jottacloud",
