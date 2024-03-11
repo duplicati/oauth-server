@@ -259,7 +259,7 @@ public static class ConfigurationLoader
     /// <param name="setting">The value to expand to a path</param>
     /// <returns>The expanded path</returns>
     private static string? ExpandEnvPath(string? setting)
-        => string.IsNullOrEmpty(setting)
+        => string.IsNullOrEmpty(setting) || setting.StartsWith("base64:")
                 ? setting
                 : Path.GetFullPath(Environment.ExpandEnvironmentVariables(setting));
 
@@ -302,14 +302,18 @@ public static class ConfigurationLoader
         if (!string.IsNullOrWhiteSpace(configuration.SecretsFilePath))
         {
             using Stream secretsData = new MemoryStream();
+            string name;
             if (configuration.SecretsFilePath.StartsWith("base64:", StringComparison.OrdinalIgnoreCase))
             {
+                name = "secrets env data";
                 secretsData.Write(Convert.FromBase64String(configuration.SecretsFilePath.Substring("base64:".Length)));
             }
             else
             {
                 if (!File.Exists(configuration.SecretsFilePath))
                     throw new InvalidDataException($"Secrets file specified, but not found: {Path.GetFullPath(configuration.SecretsFilePath)}");                
+                
+                name = configuration.SecretsFilePath;
                 using var fs = File.OpenRead(configuration.SecretsFilePath);
                 fs.CopyTo(secretsData);
             }
@@ -325,20 +329,33 @@ public static class ConfigurationLoader
                 decryptedStream = ms;                
             }
 
-            var secrets = DeserializeStream<Dictionary<string, string>>(decryptedStream, "secrets file");
+            var secrets = DeserializeStream<Dictionary<string, string>>(decryptedStream, name);
             foreach (var kp in secrets)
                 translationvalues[$"%{kp.Key}%"] = kp.Value;
         }
 
         var serviceDefaults = DefaultConfigurations.AllServices;
         var serviceRecords = DeserializeResourceStream<IEnumerable<ServiceRecord>>(ConfigResourceFilename);
-
         if (!string.IsNullOrWhiteSpace(configuration.ConfigFilePath))
         {
-            if (!File.Exists(configuration.ConfigFilePath))
-                throw new InvalidDataException($"Config file specified, but not found: {Path.GetFullPath(configuration.ConfigFilePath)}");
+            using Stream configData = new MemoryStream();
+            string name;
+            if (configuration.ConfigFilePath.StartsWith("base64:", StringComparison.OrdinalIgnoreCase))
+            {
+                name = "config env data";
+                configData.Write(Convert.FromBase64String(configuration.ConfigFilePath.Substring("base64:".Length)));
+            }
+            else
+            {
+                if (!File.Exists(configuration.ConfigFilePath))
+                    throw new InvalidDataException($"Config file specified, but not found: {Path.GetFullPath(configuration.ConfigFilePath)}");
+            
+                name = configuration.ConfigFilePath;
+                using var fs = File.OpenRead(configuration.ConfigFilePath);
+                fs.CopyTo(configData);
+            }
 
-            serviceRecords = DeserializeFile<IEnumerable<ServiceRecord>>(configuration.ConfigFilePath)
+            serviceRecords = DeserializeStream<IEnumerable<ServiceRecord>>(configData, name)
                 .Concat(serviceRecords)
                 .DistinctBy(x => x.Id);
         }
