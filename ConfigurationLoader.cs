@@ -301,21 +301,31 @@ public static class ConfigurationLoader
 
         if (!string.IsNullOrWhiteSpace(configuration.SecretsFilePath))
         {
-            if (!File.Exists(configuration.SecretsFilePath))
-                throw new InvalidDataException($"Secrets file specified, but not found: {Path.GetFullPath(configuration.SecretsFilePath)}");
-
-            using var secretsFile = File.OpenRead(configuration.SecretsFilePath);
-            using var ms = new MemoryStream();
-
-            Stream secretsStream = secretsFile;
-            if (!string.IsNullOrWhiteSpace(configuration.SecretsPassphrase))
+            using Stream secretsData = new MemoryStream();
+            if (configuration.SecretsFilePath.StartsWith("base64:", StringComparison.OrdinalIgnoreCase))
             {
-                SharpAESCrypt.SharpAESCrypt.Decrypt(configuration.SecretsPassphrase, secretsFile, ms);
-                ms.Position = 0;
-                secretsStream = ms;                
+                secretsData.Write(Convert.FromBase64String(configuration.SecretsFilePath.Substring("base64:".Length)));
+            }
+            else
+            {
+                if (!File.Exists(configuration.SecretsFilePath))
+                    throw new InvalidDataException($"Secrets file specified, but not found: {Path.GetFullPath(configuration.SecretsFilePath)}");                
+                using var fs = File.OpenRead(configuration.SecretsFilePath);
+                fs.CopyTo(secretsData);
             }
 
-            var secrets = DeserializeStream<Dictionary<string, string>>(secretsStream, "secrets file");
+            secretsData.Position = 0;
+
+            var decryptedStream = secretsData;
+            using var ms = new MemoryStream();
+            if (!string.IsNullOrWhiteSpace(configuration.SecretsPassphrase))
+            {
+                SharpAESCrypt.SharpAESCrypt.Decrypt(configuration.SecretsPassphrase, secretsData, ms);
+                ms.Position = 0;
+                decryptedStream = ms;                
+            }
+
+            var secrets = DeserializeStream<Dictionary<string, string>>(decryptedStream, "secrets file");
             foreach (var kp in secrets)
                 translationvalues[$"%{kp.Key}%"] = kp.Value;
         }
