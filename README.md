@@ -22,6 +22,8 @@ Optional environment variables:
 - `SECRETS_PASSPHRASE`: path to an existing JSON file with key/value pairs that are injected as secrets. Use [AESCrypt](https://www.aescrypt.com) to encrypt the file
 - `CONFIGFILE`: path to an existing JSON file with a custom config. If this option is set, services with the same id will override the embedded `config.json` services with the same id.
 - `STORAGE`: a connection string for indicating where the V1 tokens are stored. If not set, all connections will use V2.
+- `SEQ_URL`: url for logging to Seq
+- `SEQ_APIKEY`: API key for logging to Seq
 
 ## ASP.Net variables
 
@@ -48,6 +50,13 @@ An example `secrets.json` file would look like:
     "GD_CLIENT_SECRET": "google-client-secret"
 }
 ```
+
+## Base64 encoding
+The options `SECRETS` and `CONFIGFILE` can be encoded with base64 encoding and provided via the environment variables, which enables deployment in scenarios where there is no persistent storage available.
+
+Use the prefix `base64:` to encode it, for instance the value `{'id': 1}` should be provided as `base64:eydpZCc6IDF9`.
+For the `SECRETS` variable this can be done with or without encryption applied via `SECRETS_PASSPHRASE`.
+
 ## V1 vs V2 token format
 
 The original V1 token is essentially a random id, followed by a passphrase. The id is used to locate the encrypted blob with the refresh token, and the password is used to decrypt the blob. Using the V1 setup allows the OAuth provider to update the refresh token, without changing the client details. The V2 token is indicated by starting with V2, then the service name, and then the refresh token.
