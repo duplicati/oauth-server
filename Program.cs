@@ -1,8 +1,11 @@
 using Microsoft.Extensions.FileProviders;
 using OAuthServer;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
+var logConfiguration = new LoggerConfiguration()
+    .WriteTo.Console();
+builder.Host.UseSerilog();
 
 var stateTokenCache = new MemCacher<RequestState>();
 var fetchTokenCache = new MemCacher<FetchToken>();
@@ -31,6 +34,14 @@ var appContext = new ApplicationContext(
     renderers,
     storage
 );
+
+if (!string.IsNullOrWhiteSpace(appconfig.SeqLogUrl))
+    logConfiguration = logConfiguration.WriteTo.Seq(appconfig.SeqLogUrl, apiKey: appconfig.SeqLogApiKey);
+
+Log.Logger = logConfiguration
+    .CreateLogger();
+
+var app = builder.Build();
 
 // Support LetsEncrypt
 var le_path = Path.Combine(Directory.GetCurrentDirectory(), @".well-known");
@@ -67,4 +78,11 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = new PathString("")
 });
 
-app.Run();
+try
+{
+    app.Run();
+}
+finally
+{
+    Log.CloseAndFlush();
+}

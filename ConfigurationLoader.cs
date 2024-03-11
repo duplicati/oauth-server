@@ -56,6 +56,16 @@ public static class ConfigurationLoader
     private const string StorageStringEnvKey = "STORAGE";
 
     /// <summary>
+    /// The environment key for the Seq logging Url
+    /// </summary>
+    private const string SeqUrlEnvKey = "SEQ_URL";
+
+    /// <summary>
+    /// The environment key for the Seq API key
+    /// </summary>
+    private const string SeqApiKeyEnvKey = "SEQ_APIKEY";
+
+    /// <summary>
     /// The service configuration resource filename
     /// </summary>
     private const string ConfigResourceFilename = "config.json";
@@ -239,7 +249,10 @@ public static class ConfigurationLoader
             ExpandEnvPath(Environment.GetEnvironmentVariable(SecretsFileEnvKey)) ?? string.Empty,
             Environment.GetEnvironmentVariable(SecretsPassphraseKey) ?? string.Empty,
             ExpandEnvPath(Environment.GetEnvironmentVariable(ConfigFileEnvKey)) ?? string.Empty,
-            Environment.GetEnvironmentVariable(StorageStringEnvKey) ?? string.Empty
+            Environment.GetEnvironmentVariable(StorageStringEnvKey) ?? string.Empty,
+
+            Environment.GetEnvironmentVariable(SeqUrlEnvKey) ?? string.Empty,
+            Environment.GetEnvironmentVariable(SeqApiKeyEnvKey) ?? string.Empty
         );
 
         if (string.IsNullOrWhiteSpace(settings.Hostname))
