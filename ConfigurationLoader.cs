@@ -56,6 +56,11 @@ public static class ConfigurationLoader
     private const string StorageStringEnvKey = "STORAGE";
 
     /// <summary>
+    /// URL for the privacy policy, if not using the default
+    /// </summary>
+    private const string PrivacyPolicyEnvKey = "PRIVACY_POLICY_URL";
+
+    /// <summary>
     /// The environment key for the Seq logging Url
     /// </summary>
     private const string SeqUrlEnvKey = "SEQ_URL";
@@ -250,6 +255,7 @@ public static class ConfigurationLoader
             Environment.GetEnvironmentVariable(SecretsPassphraseKey) ?? string.Empty,
             ExpandEnvPath(Environment.GetEnvironmentVariable(ConfigFileEnvKey)) ?? string.Empty,
             Environment.GetEnvironmentVariable(StorageStringEnvKey) ?? string.Empty,
+            Environment.GetEnvironmentVariable(PrivacyPolicyEnvKey) ?? string.Empty,
 
             Environment.GetEnvironmentVariable(SeqUrlEnvKey) ?? string.Empty,
             Environment.GetEnvironmentVariable(SeqApiKeyEnvKey) ?? string.Empty
@@ -324,8 +330,8 @@ public static class ConfigurationLoader
             else
             {
                 if (!File.Exists(configuration.SecretsFilePath))
-                    throw new InvalidDataException($"Secrets file specified, but not found: {Path.GetFullPath(configuration.SecretsFilePath)}");                
-                
+                    throw new InvalidDataException($"Secrets file specified, but not found: {Path.GetFullPath(configuration.SecretsFilePath)}");
+
                 name = configuration.SecretsFilePath;
                 using var fs = File.OpenRead(configuration.SecretsFilePath);
                 fs.CopyTo(secretsData);
@@ -339,7 +345,7 @@ public static class ConfigurationLoader
             {
                 SharpAESCrypt.SharpAESCrypt.Decrypt(configuration.SecretsPassphrase, secretsData, ms);
                 ms.Position = 0;
-                decryptedStream = ms;                
+                decryptedStream = ms;
             }
 
             var secrets = DeserializeStream<Dictionary<string, string>>(decryptedStream, name);
@@ -362,7 +368,7 @@ public static class ConfigurationLoader
             {
                 if (!File.Exists(configuration.ConfigFilePath))
                     throw new InvalidDataException($"Config file specified, but not found: {Path.GetFullPath(configuration.ConfigFilePath)}");
-            
+
                 name = configuration.ConfigFilePath;
                 using var fs = File.OpenRead(configuration.ConfigFilePath);
                 fs.CopyTo(configData);

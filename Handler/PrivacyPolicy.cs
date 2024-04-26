@@ -15,10 +15,18 @@ public static class PrivacyPolicy
     /// <returns>The awaitable token</returns>
     public static Task Handle(HttpContext context, ApplicationContext appContext)
     {
-        context.Response.ContentType = "text/html";
-        context.Response.StatusCode = (int)HttpStatusCode.OK;
-        return context.Response.WriteAsync(
-            appContext.Render.PrivacyPolicy
-        );
+        if (string.IsNullOrWhiteSpace(appContext.Configuration.CustomPrivacyPolicyUrl))
+        {
+            context.Response.ContentType = "text/html";
+            context.Response.StatusCode = (int)HttpStatusCode.OK;
+            return context.Response.WriteAsync(
+                appContext.Render.PrivacyPolicy
+            );
+        }
+        else
+        {
+            context.Response.Redirect(appContext.Configuration.CustomPrivacyPolicyUrl);
+            return Task.CompletedTask;
+        }
     }
 }

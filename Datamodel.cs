@@ -114,6 +114,7 @@ public sealed record TemplateRenderers(
 /// <param name="SecretsPassphrase">Passhrase for decypting the OAuth secrets</param>
 /// <param name="ConfigFilePath">Path to service config overrides</param>
 /// <param name="StorageString">Path to a storage destination for v1 tokens</param>
+/// <param name="CustomPrivacyPolicyUrl">Url for a custom privacy policy</param>
 /// <param name="SeqLogUrl">Url for Seq log destination</param>
 /// <param name="SeqLogApiKey">Optional API key for logging to Seq</param>
 public sealed record ApplicationConfiguration(
@@ -125,6 +126,7 @@ public sealed record ApplicationConfiguration(
     string SecretsPassphrase,
     string ConfigFilePath,
     string StorageString,
+    string CustomPrivacyPolicyUrl,
     string SeqLogUrl,
     string SeqLogApiKey
 );
