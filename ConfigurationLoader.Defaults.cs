@@ -107,6 +107,20 @@ public static class DefaultConfigurations
     );
 
     /// <summary>
+    /// The setup for pCloud API
+    /// </summary>
+    /// <remarks>Managed from: https://docs.pcloud.com/my_apps/</remarks>
+    private static readonly ServiceDefault pCloud = new ServiceDefault(
+        "PCLOUD",
+        Name: "pCloud",
+        AuthUrl: "https://api.pcloud.com/oauth2_token",
+        LoginUrl: "https://my.pcloud.com/oauth2/authorize",
+        // Scope: "root_readwrite",
+        ServiceLink: "https://pcloud.com/"
+    );
+
+
+    /// <summary>
     /// Loads all known service defauls via reflection
     /// </summary>
     /// <returns>A lookup table with known service configuration defaults</returns>
