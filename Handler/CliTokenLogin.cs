@@ -73,7 +73,8 @@ public static class CliTokenLogin
             appContext.Render.LoggedIn(new TemplateRenderers.LoggedInRenderArgs(
                 Service: service.Name,
                 AuthId: authid,
-                DeAuthLink: null
+                DeAuthLink: null,
+                AdditionalData: []
             ))
         );
     }

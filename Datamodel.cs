@@ -73,6 +73,15 @@ public sealed record TemplateRenderers(
     Func<TemplateRenderers.RevokedTemplateRenderArgs, string> Revoked
 )
 {
+    /// <summary>
+    /// Render a service item on the index page
+    /// </summary>
+    /// <param name="Id">The service id</param>
+    /// <param name="Display">The display name</param>
+    /// <param name="Authlink">The link to start the auth process</param>
+    /// <param name="Servicelink">The link to the service configuration</param>
+    /// <param name="Brandimage">The brand image</param>
+    /// <param name="Notes">Any notes</param>
     public sealed record RenderedServiceItem(
         string Id,
         string Display,
@@ -81,23 +90,46 @@ public sealed record TemplateRenderers(
         string? Brandimage,
         string? Notes);
 
+    /// <summary>
+    /// Renders the index page
+    /// </summary>
+    /// <param name="RedirectId">The redirect id</param>
+    /// <param name="Providers">The list of providers</param>
     public sealed record IndexTemplateRenderArgs(
         string? RedirectId,
         IReadOnlyList<RenderedServiceItem> Providers
     );
 
+    /// <summary>
+    /// Renders the logged-in page
+    /// </summary>
+    /// <param name="Service">The service name</param>
+    /// <param name="AuthId">The auth id</param>
+    /// <param name="DeAuthLink">The de-auth link</param>
+    /// <param name="AdditionalData">Any additional data</param>
     public sealed record LoggedInRenderArgs(
         string Service,
         string AuthId,
-        string? DeAuthLink
+        string? DeAuthLink,
+        Dictionary<string, string> AdditionalData
     );
 
+    /// <summary>
+    /// Renders the CLI token page
+    /// </summary>
+    /// <param name="Id">The service id</param>
+    /// <param name="Service">The service name</param>
+    /// <param name="FetchToken">The fetch token</param>
     public sealed record CliTokenTemplateRenderArgs(
         string Id,
         string Service,
         string? FetchToken
     );
 
+    /// <summary>
+    /// Renders the revoked page
+    /// </summary>
+    /// <param name="Result">The result message</param>
     public sealed record RevokedTemplateRenderArgs(
         string Result
     );
@@ -140,7 +172,7 @@ public sealed record ApplicationConfiguration(
 /// <param name="LoginUrl">The remote login url</param>
 /// <param name="Scope">The scope to request</param>
 /// <param name="RedirectUri">The redirect uri to use</param>
-/// <param name="ExtraUrl">Any extra urk data to append</param>
+/// <param name="ExtraUrl">Any extra url data to append</param>
 /// <param name="ServiceLink">A link to the providers configuration page</param>
 /// <param name="DeAuthLink">A link to the providers de-authorize page</param>
 /// <param name="BrandImage">An image required for the provider</param>
@@ -150,6 +182,8 @@ public sealed record ApplicationConfiguration(
 /// <param name="NoRedirectUriForRefreshRequest">The provider does not accept a redirect uri for refresh requests</param>
 /// <param name="CliToken">The request is for a CLI token</param>
 /// <param name="PreferV2">The provider is preferable using v2 tokens</param>
+/// <param name="AccessTokenOnly">The provider only returns an access token</param>
+/// <param name="AdditionalElements">Any additional data reported from the provider</param>
 public sealed record ServiceDefault(
     string Id,
     string Name = "",
@@ -166,7 +200,10 @@ public sealed record ServiceDefault(
     bool NoStateForTokenRequest = false,
     bool NoRedirectUriForRefreshRequest = false,
     bool CliToken = false,
-    bool PreferV2 = false
+    bool PreferV2 = false,
+    bool AccessTokenOnly = false,
+    bool UseHostnameFromCallback = false,
+    string? AdditionalElements = null
 );
 
 /// <summary>
@@ -190,6 +227,9 @@ public sealed record ServiceDefault(
 /// <param name="NoRedirectUriForRefreshRequest">The provider does not accept a redirect uri for refresh requests</param>
 /// <param name="CliToken">The request is for a CLI token</param>
 /// <param name="PreferV2">The provider is preferable using v2 tokens</param>
+/// <param name="AccessTokenOnly">The provider only returns an access token</param>
+/// <param name="UseHostnameFromCallback">Use the hostname from the callback in the AuthUrl</param>
+/// <param name="AdditionalElements">Any additional data reported from the provider</param>
 public sealed record ServiceConfiguration(
     string Id,
     string Name,
@@ -208,5 +248,8 @@ public sealed record ServiceConfiguration(
     bool NoStateForTokenRequest,
     bool NoRedirectUriForRefreshRequest,
     bool CliToken,
-    bool PreferV2
+    bool PreferV2,
+    bool AccessTokenOnly,
+    bool UseHostnameFromCallback,
+    string? AdditionalElements
 );

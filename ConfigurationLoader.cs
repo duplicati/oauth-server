@@ -302,7 +302,10 @@ public static class ConfigurationLoader
         bool? NoStateForTokenRequest,
         bool? NoRedirectUriForRefreshRequest,
         bool? CliToken,
-        bool? PreferV2
+        bool? PreferV2,
+        bool? AccessTokenOnly,
+        bool? UseHostnameFromCallback,
+        string? AdditionalElements
     );
 
     /// <summary>
@@ -438,7 +441,8 @@ public static class ConfigurationLoader
                 LongAppName = configuration.DisplayName,
                 AuthId = data.AuthId,
                 Service = data.Service,
-                DeAuthLink = data.DeAuthLink ?? string.Empty
+                DeAuthLink = data.DeAuthLink ?? string.Empty,
+                AdditionalData = data.AdditionalData ?? []
             }),
 
             data => cliFileTemplate(new

@@ -116,7 +116,10 @@ public static class DefaultConfigurations
         AuthUrl: "https://api.pcloud.com/oauth2_token",
         LoginUrl: "https://my.pcloud.com/oauth2/authorize",
         // Scope: "root_readwrite",
-        ServiceLink: "https://pcloud.com/"
+        ServiceLink: "https://pcloud.com/",
+        AccessTokenOnly: true,
+        UseHostnameFromCallback: true,
+        AdditionalElements: "locationid,hostname"
     );
 
 

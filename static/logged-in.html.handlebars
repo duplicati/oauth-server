@@ -69,6 +69,12 @@
         <p id="auth-token" style="display: none">{{AuthId}}</p>
         <p id="deauth-gdrive" style="display: none">Visit your <a href="{{DeAuthLink}}">App Permissions</a> page to
             de-authorize {{AppName}}</p>
+
+        <ul>
+        {{#each AdditionalData}}
+            <li>{{@key}}: {{this}}</li>
+        {{/each}}
+        </ul>
     </div>
 </body>
 

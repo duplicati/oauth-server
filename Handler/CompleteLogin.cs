@@ -40,6 +40,15 @@ public static class CompleteLogin
         if (service == null)
             throw new Exception("Service Id was invalid");
 
+        var additionalData = new Dictionary<string, string>();
+        if (service.AdditionalElements != null)
+            foreach (var element in service.AdditionalElements.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                var v = context.Request.Query[element].FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(v))
+                    additionalData[element] = v;
+            }
+
         var redirect_uri = service.RedirectUri;
         if (!string.IsNullOrWhiteSpace(token))
             redirect_uri = QueryHelpers.AddQueryString(redirect_uri, "token", token);
@@ -49,17 +58,50 @@ public static class CompleteLogin
             ("redirect_uri", redirect_uri),
             ("client_secret", service.ClientSecret),
             ("code", code),
-            ("state", stateKey),
+            // ("state", stateKey),
             ("grant_type", "authorization_code")
         }.ToList();
 
         if (service.NoStateForTokenRequest)
             req.RemoveAll(x => x.Item1 == "state");
 
+        // Special handling for pCloud, use alternate hostname for auth call (region specific)
+        var authurl = service.AuthUrl;
+        if (service.UseHostnameFromCallback)
+        {
+            var althostname = context.Request.Query["hostname"].FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(althostname))
+                authurl = new UriBuilder(authurl) { Host = althostname }.Uri.ToString();
+        }
+
         var content = new FormUrlEncodedContent(req.Select(x => new KeyValuePair<string, string>(x.Item1, x.Item2)));
-        using var data = await appContext.HttpClient.PostAsync(service.AuthUrl, content, context.RequestAborted);
+        using var data = await appContext.HttpClient.PostAsync(authurl, content, context.RequestAborted);
         var json = await data.Content.ReadAsStringAsync(context.RequestAborted);
         data.EnsureSuccessStatusCode();
+
+        if (service.AccessTokenOnly)
+        {
+            var accResp = JsonSerializer.Deserialize<OAuthAccessTokenOnlyResponse>(json);
+            var access_token = accResp?.access_token;
+            var deauth_link = (string?)null;
+
+            if (string.IsNullOrEmpty(access_token))
+            {
+                access_token = $"Server error, you must de-authorize {appContext.Configuration.AppName}";
+                deauth_link = service.DeAuthLink;
+            }
+
+            await context.Response.WriteAsync(
+                appContext.Render.LoggedIn(new TemplateRenderers.LoggedInRenderArgs(
+                    Service: service.Name,
+                    AuthId: access_token,
+                    DeAuthLink: deauth_link,
+                    AdditionalData: additionalData
+                ))
+            );
+
+            return;
+        }
 
         var resp = JsonSerializer.Deserialize<OAuthResponse>(json)
             ?? throw new Exception("Failed to deserialize JSON response");
@@ -70,7 +112,8 @@ public static class CompleteLogin
                 appContext.Render.LoggedIn(new TemplateRenderers.LoggedInRenderArgs(
                     Service: service.Name,
                     AuthId: $"Server error, you must de-authorize {appContext.Configuration.AppName}",
-                    DeAuthLink: service.DeAuthLink
+                    DeAuthLink: service.DeAuthLink,
+                    AdditionalData: additionalData
                 ))
             );
 
@@ -89,7 +132,8 @@ public static class CompleteLogin
             appContext.Render.LoggedIn(new TemplateRenderers.LoggedInRenderArgs(
                 Service: service.Name,
                 AuthId: authid,
-                DeAuthLink: null
+                DeAuthLink: null,
+                AdditionalData: additionalData
             ))
         );
     }
@@ -99,4 +143,10 @@ public static class CompleteLogin
     /// </summary>
     /// <param name="refresh_token">The refresh token</param>
     private sealed record OAuthResponse(string? refresh_token);
+
+    /// <summary>
+    /// The response received from the OAuth server when only an access token is returned
+    /// </summary>
+    /// <param name="access_token">The access token</param>
+    private sealed record OAuthAccessTokenOnlyResponse(string? access_token);
 }
