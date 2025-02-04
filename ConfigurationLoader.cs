@@ -1,4 +1,6 @@
 using System.Collections.Immutable;
+using System.CommandLine;
+using System.CommandLine.NamingConventionBinder;
 using System.Reflection;
 using HandlebarsDotNet;
 namespace OAuthServer;
@@ -238,13 +240,146 @@ public static class ConfigurationLoader
         return Activator.CreateInstance(targetproptype);
     }
 
+    /// <summary>
+    /// The application configuration from the commandline
+    /// </summary>
+    /// <param name="Hostname">The hostname to use</param>
+    /// <param name="AppName">The name of the application</param>
+    /// <param name="DisplayName">The display name of the application</param>
+    /// <param name="Services">The services to enable</param>
+    /// <param name="Secrets">The secrets file</param>
+    /// <param name="SecretsPassphrase">The passphrase to decrypt the secrets file</param>
+    /// <param name="ConfigFile">The configuration file</param>
+    /// <param name="Storage">The storage destination</param>
+    /// <param name="PrivacyPolicy">The URL to the privacy policy</param>
+    /// <param name="SeqUrl">The Seq logging URL</param>
+    /// <param name="SeqApiKey">The Seq API key</param>
+    /// <param name="ListenPorts">The port to listen on</param>
+    private sealed record CommandLineArguments(
+        string? Hostname,
+        string? AppName,
+        string? DisplayName,
+        string? Services,
+        string? Secrets,
+        string? SecretsPassphrase,
+        string? ConfigFile,
+        string? Storage,
+        string? PrivacyPolicy,
+        string? SeqUrl,
+        string? SeqApiKey,
+        int? ListenPorts,
+        string? ListenUrls,
+        string? CertificatePath,
+        string? CertificatePassword
+    );
+
+    /// <summary>
+    /// The commandline binder does not support underscores in the names
+    /// </summary>
+    private static readonly Dictionary<string, string> EnvNameMap = new()
+    {
+        { nameof(CommandLineArguments.SecretsPassphrase), SecretsPassphraseKey },
+        { nameof(CommandLineArguments.PrivacyPolicy), PrivacyPolicyEnvKey },
+        { nameof(CommandLineArguments.SeqUrl), SeqUrlEnvKey },
+        { nameof(CommandLineArguments.SeqApiKey), SeqApiKeyEnvKey },
+        { nameof(CommandLineArguments.ListenPorts), "ASPNETCORE_HTTP_PORTS" },
+        { nameof(CommandLineArguments.ListenUrls), "ASPNETCORE_URLS" },
+        { nameof(CommandLineArguments.CertificatePath), "ASPNETCORE_Kestrel__Certificates__Default__Path" },
+        { nameof(CommandLineArguments.CertificatePassword), "ASPNETCORE_Kestrel__Certificates__Default__Password" }
+    };
+
+    /// <summary>
+    /// Creates a command to run the OAuth server
+    /// </summary>
+    /// <returns></returns>
+    private static Command CreateCommand()
+    {
+        var command = new Command("run", "Starts the OAuth server")
+        {
+            new Option<string>(["--hostname"], description: "The hostname to listen on", getDefaultValue: () => "localhost"),
+            new Option<string>(["--appname"],  description: "The name of the application", getDefaultValue: () => "Duplicati"),
+            new Option<string>(["--displayname"],  description: "The display name of the application", getDefaultValue: () => "Duplicati OAuth Handler"),
+            new Option<string>(["--services"],  description: "The services to enable"),
+            new Option<string>(["--secrets"],  description: "The secrets file"),
+            new Option<string>(["--secrets-passphrase"],  description: "The passphrase to decrypt the secrets file"),
+            new Option<string>(["--configfile"],  description: "The configuration file"),
+            new Option<string>(["--storage"],  description: "The storage destination", getDefaultValue: () => "file://./tokens?pathmapped=true"),
+            new Option<string>(["--privacy-policy"],  description: "The URL to the privacy policy"),
+            new Option<string>(["--seq-url"],  description: "The Seq logging URL"),
+            new Option<string>(["--seq-apikey"],  description: "The Seq API key"),
+            new Option<int?>(["--listen-ports"],  description: "The port to listen on", getDefaultValue: () => null),
+            new Option<string>(["--listen-urls"],  description: "The URL to listen on", getDefaultValue: () => "http://localhost:8080"),
+            new Option<string>(["--certificate-path"],  description: "The path to the certificate file"),
+            new Option<string>(["--certificate-password"],  description: "The password for the certificate file")
+        };
+
+        command.Handler = CommandHandler.Create<CommandLineArguments>(SetEnvFromCommandlineArgs);
+
+        return command;
+    }
+
+    /// <summary>
+    /// Sets the environment variables from the command line arguments
+    /// </summary>
+    /// <param name="args">The parsed arguments
+    private static void SetEnvFromCommandlineArgs(CommandLineArguments args)
+    {
+        if (!string.IsNullOrWhiteSpace(args.Storage))
+        {
+            if (args.Storage.IndexOf("://") < 0)
+                args = args with { Storage = $"file://{args.Storage}?pathmapped=true" };
+
+            if (args.Storage.StartsWith("file://"))
+            {
+                var parts = args.Storage.Substring("file://".Length).Split('?', 2);
+                if (!Path.IsPathRooted(parts[0]))
+                    parts[0] = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "", parts[0]);
+                var path = Path.GetFullPath(parts[0]);
+                args = args with { Storage = $"file://{path}?{parts.Skip(1).FirstOrDefault()}" };
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+            }
+        }
+
+        args.GetType().GetProperties().ToList().ForEach(x =>
+        {
+            var value = x.GetValue(args);
+            if (value != null)
+            {
+                var name = EnvNameMap.GetValueOrDefault(x.Name, x.Name).ToUpperInvariant();
+                Environment.SetEnvironmentVariable(name, value.ToString());
+            }
+        });
+
+    }
+
+    /// <summary>
+    /// Loads the application settings from the command line arguments
+    /// </summary>
+    /// <param name="args">The command line arguments</param>
+    /// <returns>The application configuration</returns>
+    public static ApplicationConfiguration LoadApplicationConfiguration(string[] args)
+    {
+        var root = new RootCommand
+        {
+            CreateCommand()
+        };
+
+        var res = root.Invoke(args);
+        if (res != 0)
+            Environment.Exit(res);
+
+        return LoadApplicationConfiguration();
+    }
 
     /// <summary>
     /// Loads the application settings from the embedded settings file
     /// </summary>
     /// <returns>The application configuration</returns>
-    public static ApplicationConfiguration LoadApplicationConfiguration()
+    private static ApplicationConfiguration LoadApplicationConfiguration()
     {
+        // Slightly backwards to set the environment variables from the command line arguments,
+        // but this enables us to be be more Docker compatible
         var settings = new ApplicationConfiguration(
             Environment.GetEnvironmentVariable(HostNameEnvKey) ?? string.Empty,
             Environment.GetEnvironmentVariable(AppNameEnvKey) ?? string.Empty,
@@ -264,7 +399,7 @@ public static class ConfigurationLoader
         if (string.IsNullOrWhiteSpace(settings.Hostname))
             throw new InvalidDataException($"Missing the hostname, please set then environment variable {HostNameEnvKey}");
         if (string.IsNullOrWhiteSpace(settings.AppName))
-            throw new InvalidDataException($"Missing the hostname, please set then environment variable {AppNameEnvKey}");
+            throw new InvalidDataException($"Missing the appname, please set then environment variable {AppNameEnvKey}");
 
         if (string.IsNullOrWhiteSpace(settings.DisplayName))
             settings = settings with { DisplayName = $"{settings.AppName} OAuth Handler" };

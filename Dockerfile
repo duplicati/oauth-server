@@ -13,4 +13,4 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim-amd64
 WORKDIR /App
 COPY --from=build-env /App/out .
 ENV DOTNET_EnableDiagnostics=0
-ENTRYPOINT ["dotnet", "OAuthServer.dll"]
+ENTRYPOINT ["dotnet", "OAuthServer.dll", "run"]

@@ -2,23 +2,18 @@ using Microsoft.Extensions.FileProviders;
 using OAuthServer;
 using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
-var logConfiguration = new LoggerConfiguration()
-    .WriteTo.Console();
-builder.Host.UseSerilog();
+var appconfig = ConfigurationLoader.LoadApplicationConfiguration(args);
+var renderers = ConfigurationLoader.LoadRenderers(appconfig);
+var services = ConfigurationLoader.LoadServices(appconfig)
+    .ToDictionary(x => x.Id);
 
 var stateTokenCache = new MemCacher<RequestState>();
 var fetchTokenCache = new MemCacher<FetchToken>();
 var accessTokenCache = new MemCacher<AccessToken>();
 var httpClient = new HttpClient(
-    // Pr docs, we refresh every 15 min to ensure DNS TTL is re-applied
+    // Per docs, we refresh every 15 min to ensure DNS TTL is re-applied
     new SocketsHttpHandler() { PooledConnectionLifetime = TimeSpan.FromMinutes(15) }
 );
-
-var appconfig = ConfigurationLoader.LoadApplicationConfiguration();
-var renderers = ConfigurationLoader.LoadRenderers(appconfig);
-var services = ConfigurationLoader.LoadServices(appconfig)
-    .ToDictionary(x => x.Id);
 
 var storage = string.IsNullOrWhiteSpace(appconfig.StorageString)
     ? null
@@ -34,6 +29,11 @@ var appContext = new ApplicationContext(
     renderers,
     storage
 );
+
+var builder = WebApplication.CreateBuilder(args);
+var logConfiguration = new LoggerConfiguration()
+    .WriteTo.Console();
+builder.Host.UseSerilog();
 
 if (!string.IsNullOrWhiteSpace(appconfig.SeqLogUrl))
     logConfiguration = logConfiguration.WriteTo.Seq(appconfig.SeqLogUrl, apiKey: appconfig.SeqLogApiKey);
