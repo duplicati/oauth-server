@@ -28,6 +28,11 @@ public static class ConfigurationLoader
     private const string HostNameEnvKey = "HOSTNAME";
 
     /// <summary>
+    /// The environment key for the hostname
+    /// </summary>
+    private const string RedirectHostNameEnvKey = "REDIRECT_HOSTNAME";
+
+    /// <summary>
     /// The environment key for the display
     /// </summary>
     private const string DisplayNameEnvKey = "DISPLAYNAME";
@@ -381,7 +386,7 @@ public static class ConfigurationLoader
         // Slightly backwards to set the environment variables from the command line arguments,
         // but this enables us to be be more Docker compatible
         var settings = new ApplicationConfiguration(
-            Environment.GetEnvironmentVariable(HostNameEnvKey) ?? string.Empty,
+            Environment.GetEnvironmentVariable(RedirectHostNameEnvKey) ?? Environment.GetEnvironmentVariable(HostNameEnvKey) ?? string.Empty,
             Environment.GetEnvironmentVariable(AppNameEnvKey) ?? string.Empty,
             Environment.GetEnvironmentVariable(DisplayNameEnvKey) ?? string.Empty,
             Environment.GetEnvironmentVariable(ServicesEnvKey) ?? string.Empty,
