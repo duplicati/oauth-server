@@ -78,6 +78,8 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = new PathString("")
 });
 
+Log.Information("Starting OAuth Server at {Url}", appconfig.Hostname);
+
 try
 {
     app.Run();
