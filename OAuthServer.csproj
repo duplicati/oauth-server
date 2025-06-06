@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Handlebars.Net" Version="2.1.6" />
-    <PackageReference Include="KVPSButter.S3" Version="0.0.3-alpha" />
+    <PackageReference Include="KVPSButter.S3" Version="0.0.11-alpha" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="7.0.0" />
