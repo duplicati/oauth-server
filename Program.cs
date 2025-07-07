@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.FileProviders;
 using OAuthServer;
 using Serilog;
@@ -76,6 +77,38 @@ app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot")),
     RequestPath = new PathString("")
+});
+
+app.UseExceptionHandler(app =>
+{
+    app.Run(async context =>
+    {
+        if (context.Response.HasStarted) return;
+
+        var thrownException = context.Features.Get<IExceptionHandlerPathFeature>()?.Error;
+
+        context.Response.Clear();
+        context.Response.Headers.CacheControl = "no-store";
+
+        if (thrownException is UserReportedHttpException ex)
+        {
+            context.Response.Headers["X-Reason"] = ex.Message;
+            context.Response.StatusCode = (int)ex.StatusCode;
+        }
+        else
+        {
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        }
+
+        context.Response.Headers["Access-Control-Expose-Headers"] = "X-Reason";
+        context.Response.ContentType = "text/plain";
+
+        var body = thrownException is UserReportedHttpException
+                   ? thrownException.Message
+                   : "An error occurred";
+
+        await context.Response.WriteAsync(body);
+    });
 });
 
 Log.Information("Starting OAuth Server at {Url}", appconfig.Hostname);

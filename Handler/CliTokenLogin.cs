@@ -25,11 +25,11 @@ public static class CliTokenLogin
         var fetchTokenKey = context.Request.Form["fetchtoken"].FirstOrDefault();
 
         if (string.IsNullOrWhiteSpace(token) || token.Length < 6)
-            throw new HttpRequestException("Invalid token");
+            throw new UserReportedHttpException("Invalid token");
 
         var service = appContext.Services.GetValueOrDefault(serviceId);
         if (service == null || !service.CliToken)
-            throw new HttpRequestException("Service not supported");
+            throw new UserReportedHttpException("Service not supported");
 
         // Convert from base64 url-safe to regular base64 with padding
         var base64token = token.Replace('-', '+').Replace('_', '/');
@@ -46,7 +46,7 @@ public static class CliTokenLogin
         }
         catch (Exception ex)
         {
-            throw new HttpRequestException("Invalid token data", ex);
+            throw new UserReportedHttpException("Invalid token data", ex);
         }
 
         var req = new[] {

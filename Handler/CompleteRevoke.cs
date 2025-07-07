@@ -19,7 +19,7 @@ public static class CompleteRevoke
             ?? context.Request.Headers["X-AuthID"].FirstOrDefault();
 
         if (string.IsNullOrEmpty(authId))
-            throw new HttpRequestException("Missing AuthID");
+            throw new UserReportedHttpException("Missing AuthID");
 
         // v2 tokens have no state that can be deleted
         if (authId.StartsWith("v2:"))
@@ -43,13 +43,13 @@ public static class CompleteRevoke
             if (parts.Length != 2)
             {
                 result = "Error: Invalid AuthId format";
-                throw new HttpRequestException("Invalid AuthId format");
+                throw new UserReportedHttpException("Invalid AuthId format");
             }
 
             if (appContext.Storage == null)
             {
                 result = "Error: Persisted storage is not configured on server";
-                throw new HttpRequestException("Persisted storage is not configured");
+                throw new UserReportedHttpException("Persisted storage is not configured");
             }
 
             var keyId = parts[0];

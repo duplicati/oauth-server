@@ -21,12 +21,12 @@ public static class Refresh
         else if (context.Request.Method == "GET")
             authId = context.Request.Query["authid"].FirstOrDefault();
         else
-            throw new HttpRequestException("Invalid HTTP method", null, System.Net.HttpStatusCode.MethodNotAllowed);
+            throw new UserReportedHttpException("Invalid HTTP method", System.Net.HttpStatusCode.MethodNotAllowed);
 
         authId ??= context.Request.Headers["X-AuthID"].FirstOrDefault();
 
         if (string.IsNullOrEmpty(authId))
-            throw new HttpRequestException("Missing AuthID");
+            throw new UserReportedHttpException("Missing AuthID");
 
         if (authId.StartsWith("v2:"))
             await HandleV2(context, appContext, authId);
@@ -45,16 +45,16 @@ public static class Refresh
     {
         var parts = authId.Split(':', 3, StringSplitOptions.TrimEntries);
         if (parts.Length != 3 || parts[0] != "v2")
-            throw new HttpRequestException("Invalid AuthId, must be v2 format");
+            throw new UserReportedHttpException("Invalid AuthId, must be v2 format");
 
         var serviceId = parts[1];
         var refreshToken = parts[2];
         var service = appContext.Services.GetValueOrDefault(serviceId);
         if (service == null)
-            throw new HttpRequestException("Service not supported");
+            throw new UserReportedHttpException("Service not supported");
 
         if (refreshToken.Length < 6)
-            throw new HttpRequestException("Invalid refresh token");
+            throw new UserReportedHttpException("Invalid refresh token");
 
         var cacheKey = QueryStringBuilder.Build("/v2/token", ("id", refreshToken.HashToBase64String()), ("service", serviceId));
         if (await TryEmitCachedResponse(context, appContext, cacheKey))
@@ -74,10 +74,10 @@ public static class Refresh
     {
         var parts = authId.Split(':', 2, StringSplitOptions.TrimEntries);
         if (parts.Length != 2)
-            throw new HttpRequestException("Invalid AuthId format");
+            throw new UserReportedHttpException("Invalid AuthId format");
 
         if (appContext.Storage == null)
-            throw new HttpRequestException("Persisted storage is not configured");
+            throw new UserReportedHttpException("Persisted storage is not configured");
 
         var keyId = parts[0];
         var password = parts[1];
@@ -94,16 +94,15 @@ public static class Refresh
         }
         catch (StorageProvider.DecryptingFailedException dex)
         {
-            context.Response.Headers.Append("X-Reason", "Invalid key or password");
-            throw new HttpRequestException("Invalid key or password", dex, System.Net.HttpStatusCode.Unauthorized);
+            throw new UserReportedHttpException("Invalid key or password", dex, System.Net.HttpStatusCode.Unauthorized);
         }
 
         var service = appContext.Services.GetValueOrDefault(entry.ServiceId);
         if (service == null)
-            throw new HttpRequestException("Service not supported");
+            throw new UserReportedHttpException("Service not supported");
 
         if (entry.RefreshToken.Length < 6)
-            throw new HttpRequestException("Invalid refresh token");
+            throw new UserReportedHttpException("Invalid refresh token");
 
         var oauthresp = await RefreshAndReportResult(context, appContext, service, cacheKey, entry.RefreshToken);
         if (oauthresp?.json != null)
