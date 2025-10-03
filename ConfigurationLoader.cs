@@ -517,6 +517,7 @@ public static class ConfigurationLoader
                 fs.CopyTo(configData);
             }
 
+            configData.Position = 0;
             serviceRecords = DeserializeStream<IEnumerable<ServiceRecord>>(configData, name)
                 .Concat(serviceRecords)
                 .DistinctBy(x => x.Id);
