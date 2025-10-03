@@ -2,7 +2,7 @@
 
 # Build the release version of the project
 RIDS="win-x64 linux-x64 osx-arm64"
-VERSION=1.0.0
+VERSION=1.0.1
 DATE=$(date +%Y-%m-%d)
 
 # Remove the existing release folder
